@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Tạo ma trận chi phí</title>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="top-bar">
+        <button id="generateMatrix">Copy ma trận MATLAB</button>
+        <button id="copyNodeNames">Copy tên đỉnh</button>
+        <button id="generateRandomGraph">Tạo đồ thị ngẫu nhiên</button>
+        <div>
+            <strong>Bảng chỉ số đỉnh:</strong>
+            <table id="nodeTable">
+                <thead>
+                    <tr>
+                        <th>Tên đỉnh</th>
+                        <th>Chỉ số</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="network"></div>
+    <div id="editor" class="label-editor" contenteditable="true" style="display:none;"></div>
+
+    <script>
+        document.getElementById("generateRandomGraph").addEventListener("click", () => {
+            const numNodes = 5 + Math.floor(Math.random() * 6); // 5 to 10 nodes
+            const avgDegree = 4; // Average in+out degree
+            const totalEdges = Math.floor((numNodes * avgDegree) / 2); // Divide by 2 to avoid oversaturation
+            const maxWeight = 20;
+
+            // Clear current graph
+            nodes.clear();
+            edges.clear();
+            nodeId = 1;
+
+            // Add nodes
+            const newNodes = [];
+            for (let i = 0; i < numNodes; i++) {
+                const id = `Node${nodeId++}`;
+                newNodes.push({
+                    id,
+                    label: id,
+                    x: Math.random() * 500 - 250,
+                    y: Math.random() * 500 - 250
+                });
+            }
+            nodes.add(newNodes);
+
+            const existingEdges = new Set();
+
+            // Randomly generate edges (avoiding duplicates and self-loops)
+            while (edges.length < totalEdges) {
+                const fromIndex = Math.floor(Math.random() * numNodes);
+                let toIndex = Math.floor(Math.random() * numNodes);
+
+                while (toIndex === fromIndex) {
+                    toIndex = Math.floor(Math.random() * numNodes);
+                }
+
+                const from = newNodes[fromIndex].id;
+                const to = newNodes[toIndex].id;
+                const edgeKey = `${from}->${to}`;
+
+                if (!existingEdges.has(edgeKey)) {
+                    const weight = Math.floor(Math.random() * maxWeight) + 1;
+                    edges.add({
+                        id: `${from}_${to}_${Date.now() + Math.random()}`,
+                        from,
+                        to,
+                        label: weight.toString()
+                    });
+                    existingEdges.add(edgeKey);
+                }
+            }
+
+            latestSortedNodes = [];
+            const allNodes = nodes.get();
+            const allEdges = edges.get();
+
+            const sortedNodes = allNodes.sort((a, b) => a.id.localeCompare(b.id));
+            latestSortedNodes = sortedNodes; // Save for reuse
+            const nodeIndex = Object.fromEntries(sortedNodes.map((n, i) => [n.id, i]));
+
+            updateNodeTable(sortedNodes);
+        });
+    </script>
+    <script>
+        const container = document.getElementById("network");
+        const editor = document.getElementById("editor");
+        const nodeTableBody = document.querySelector("#nodeTable tbody");
+
+        const nodes = new vis.DataSet();
+        const edges = new vis.DataSet();
+        const data = { nodes, edges };
+        let nodeId = 1;
+        let draggingFromNode = null;
+
+        let latestSortedNodes = [];
+
+        const network = new vis.Network(container, data, {
+            interaction: {
+                dragNodes: true,
+                dragView: true,
+                multiselect: true,
+                selectable: true
+            },
+            manipulation: true,
+            physics: { stabilization: true },
+            nodes: {
+                shape: "ellipse",
+                font: { size: 14 }
+            },
+            edges: {
+                arrows: 'to',
+                font: { align: 'middle' }
+            }
+        });
+
+        network.on("doubleClick", function (params) {
+            if (params.nodes.length === 0 && params.edges.length === 0) {
+                const pos = network.DOMtoCanvas(params.pointer.DOM);
+                const id = `Node${nodeId++}`;
+                nodes.add({ id, label: id, x: pos.x, y: pos.y, fixed: false });
+            } else if (params.nodes.length > 0) {
+                const id = params.nodes[0];
+                const pos = network.getPositions([id])[id];
+                const dom = network.canvasToDOM(pos);
+                showEditor(dom, nodes.get(id).label, newText => {
+                    nodes.update({ id, label: newText });
+                });
+            } else if (params.edges.length > 0) {
+                const id = params.edges[0];
+                const edge = edges.get(id);
+                const fromPos = network.getPositions([edge.from])[edge.from];
+                const toPos = network.getPositions([edge.to])[edge.to];
+                const mid = {
+                    x: (fromPos.x + toPos.x) / 2,
+                    y: (fromPos.y + toPos.y) / 2
+                };
+                const dom = network.canvasToDOM(mid);
+                showEditor(dom, edge.label || "1", newText => {
+                    edges.update({ id, label: newText });
+                });
+            }
+        });
+
+        container.addEventListener("mousedown", e => {
+            if (e.button === 2) {
+                const node = network.getNodeAt({ x: e.clientX, y: e.clientY });
+                if (node) draggingFromNode = node;
+            }
+        });
+
+        container.addEventListener("mouseup", e => {
+            if (e.button === 2 && draggingFromNode) {
+                const toNode = network.getNodeAt({ x: e.clientX, y: e.clientY });
+                if (toNode && toNode !== draggingFromNode) {
+                    edges.add({
+                        id: `${draggingFromNode}_${toNode}_${Date.now()}`,
+                        from: draggingFromNode,
+                        to: toNode,
+                        label: "1"
+                    });
+                }
+                draggingFromNode = null;
+            }
+        });
+
+        container.addEventListener("contextmenu", e => e.preventDefault());
+
+        document.addEventListener("keydown", e => {
+            if (e.key === "Escape") network.unselectAll();
+            if (e.key === "Delete") {
+                const sel = network.getSelection();
+                nodes.remove(sel.nodes);
+                edges.remove(sel.edges);
+            }
+        });
+
+        function showEditor(position, initialText, callback) {
+            editor.style.left = position.x + "px";
+            editor.style.top = position.y + "px";
+            editor.textContent = initialText;
+            document.execCommand('selectAll', false, null);
+            editor.style.display = "block";
+            editor.focus();
+
+            editor.onblur = () => {
+                editor.style.display = "none";
+                callback(editor.textContent.trim());
+            };
+
+            editor.onkeydown = function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    editor.blur();
+                }
+            };
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // alert("Copied to clipboard");
+            }).catch(err => {
+                console.error("Clipboard copy failed", err);
+            });
+        }
+
+        function updateNodeTable(sortedNodes) {
+            nodeTableBody.innerHTML = "";
+            sortedNodes.forEach((node, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${node.label}</td><td>${index}</td>`;
+                nodeTableBody.appendChild(row);
+            });
+        }
+
+        document.getElementById("generateMatrix").addEventListener("click", () => {
+            const allNodes = nodes.get();
+            const allEdges = edges.get();
+
+            const sortedNodes = allNodes.sort((a, b) => a.id.localeCompare(b.id));
+            latestSortedNodes = sortedNodes; // Save for reuse
+            const nodeIndex = Object.fromEntries(sortedNodes.map((n, i) => [n.id, i]));
+
+            updateNodeTable(sortedNodes);
+
+            const n = sortedNodes.length;
+            const matrix = Array.from({ length: n }, (_, i) =>
+                Array.from({ length: n }, (_, j) => i === j ? 0 : "inf")
+            );
+
+            for (const edge of allEdges) {
+                const i = nodeIndex[edge.from];
+                const j = nodeIndex[edge.to];
+                let weight = parseFloat(edge.label);
+                if (isNaN(weight)) weight = 1;
+                matrix[i][j] = weight;
+            }
+
+            const matrixString = '[' + matrix.map(row => row.join(' ')).join('; ') + ']';
+            copyToClipboard(matrixString);
+        });
+
+        document.getElementById("copyNodeNames").addEventListener("click", () => {
+            if (!latestSortedNodes.length) {
+                latestSortedNodes = nodes.get().sort((a, b) => a.id.localeCompare(b.id));
+            }
+            const namesArray = latestSortedNodes.map(n => `"${n.label}"`);
+            const namesString = `{${namesArray.join(', ')}}`;
+            copyToClipboard(namesString);
+        });
+    </script>
+
+</body>
+
+</html>

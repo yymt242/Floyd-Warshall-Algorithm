@@ -1,0 +1,87 @@
+[0 18 inf inf inf inf inf 2 inf; 11 0 3 7 4 19 inf inf inf; inf inf 0 inf 20 inf inf inf inf; 13 inf inf 0 inf inf 8 inf inf; inf inf inf inf 0 inf inf inf 3; 17 3 inf inf inf 0 inf inf inf; inf inf inf inf 3 inf 0 inf inf; inf inf 13 inf inf inf 18 0 inf; inf 4 inf inf inf 9 inf inf 0]
+{"TramXeBus", "NhanVan", "KTX_A", "KTX_B", "NhaVanHoa", "BachKhoa", "CanTeen", "VongXoay", "SanBay"}
+
+KTX_A to BachKhoa
+
+
+Nhập ma trận chi phí dạng ma trận (ví dụ: [0 1 inf; 1 0 2; inf inf 0]):
+[0 inf 14 inf inf inf inf 18; inf 0 inf inf inf 2 inf 17; 12 15 0 15 inf 3 inf inf; 6 inf inf 0 3 3 inf inf; inf inf inf inf 0 inf inf 9; inf inf inf inf inf 0 inf inf; inf 13 inf inf 7 3 0 inf; inf inf 20 inf inf inf inf 0]
+Nhập tên các đỉnh dưới dạng mảng chuỗi (ví dụ: {"Node1", "Node2", "Node3"}):
+{"Node1", "Node2", "Node3", "Node4", "Node5", "Node6", "Node7", "Node8"}
+Nhập tên đỉnh bắt đầu: Node3
+Nhập tên đỉnh kết thúc: Node7
+Không có đường đi ngắn nhất từ Node3 đến Node7.
+
+
+graph = [
+    0,   2,   6, INF;
+    INF, 0,   3,   5;
+    INF, INF, 0,   5;
+    INF, INF, INF, 0
+];
+
+graph = [
+    0,   2,   INF, 10,  6,   INF, 7,   INF, 3;
+    2,   0,   5,   INF, 4,   8,   INF, 3,   INF;
+    INF, 5,   0,   9,   INF, 4,   INF, 7,   6;
+    10,  INF, 9,   0,   8,   INF, INF, 12,  5;
+    6,   4,   INF, 8,   0,   3,   INF, INF, 7;
+    INF, 8,   4,   INF, 3,   0,   7,   INF, 2;
+    7,   INF, INF, INF, INF, 7,   0,   5,   INF;
+    INF, 3,   7,   12,  INF, INF, 5,   0,   4;
+    3,   INF, 6,   5,   7,   2,   INF, 4,   0
+];
+
+graph = [
+    0,   3,   5,   INF, 8,   INF;
+    INF, 0,   2,   6,   INF, INF;
+    INF, INF, 0,   4,   7,   INF;
+    INF, INF, INF, 0,   INF, 5;
+    2,   INF, INF, INF, 0,   3;
+    INF, INF, INF, INF, INF, 0
+];
+
+graph = [
+    0, 3, INF, INF, 6, INF;
+    3, 0, 2, INF, INF, INF;
+    INF, 2, 0, 1, INF, 4;
+    INF, INF, 1, 0, 5, INF;
+    6, INF, INF, 5, 0, 2;
+    INF, INF, 4, INF, 2, 0
+];
+
+graph = [
+    0, 4, INF, INF, INF, INF;
+    4, 0, 7, INF, INF, INF;
+    INF, 7, 0, 5, INF, INF;
+    INF, INF, 5, 0, 3, INF;
+    INF, INF, INF, 3, 0, INF;
+    INF, INF, INF, INF, INF, 0
+];
+
+graph = [
+    0, 1, INF, INF, INF, INF;
+    INF, 0, -2, INF, INF, INF;
+    INF, INF, 0, 3, INF, INF;
+    INF, INF, INF, 0, 4, INF;
+    INF, INF, INF, INF, 0, 5;
+    INF, -6, INF, INF, INF, 0
+];
+
+graph = [
+    0,   -3,  INF, INF, INF, INF, 7,   INF, INF;
+    INF,  0,   5,   INF, INF, INF, INF, -2,  INF;
+    INF, INF,  0,   9,   INF, -6,  INF, INF, INF;
+    INF, INF, INF,  0,   8,   INF, INF, INF, -4;
+    INF, INF, INF, INF,  0,   3,   INF, INF, INF;
+    INF, INF, -1,  INF, INF,  0,   2,   INF, INF;
+    INF,  6,   INF, INF, INF, INF,  0,   5,   INF;
+    INF, INF, INF, INF, INF, INF, INF,  0,   -7;
+    INF, INF, INF, INF, INF,  4,   INF, INF,  0
+];
+
+graph = [
+    0, 4, INF;
+    INF, 0, -3;
+    2, -2, 0;
+];
