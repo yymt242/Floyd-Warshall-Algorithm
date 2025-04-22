@@ -7,45 +7,59 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body style="background-color: lightblue;">
 
     <div id="top-bar">
-        <button id="generateMatrix">Copy ma trận MATLAB</button>
-        <button id="copyNodeNames">Copy tên đỉnh</button>
-        <button id="generateRandomGraph">Tạo đồ thị ngẫu nhiên</button>
-        <div>
-            <strong>Bảng chỉ số đỉnh:</strong>
-            <table id="nodeTable">
-                <thead>
-                    <tr>
-                        <th>Tên đỉnh</th>
-                        <th>Chỉ số</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+        <div class="grid-item top-left">
+            <button id="generateMatrix">Copy ma trận</button>
+            <button id="copyNodeNames">Copy tên đỉnh</button>
+        </div>
+
+        <div class="grid-item top-right">
+            <label>
+                <input type="checkbox" id="togglePhysics" checked>
+                Bật mô phỏng vật lý
+            </label>
+        </div>
+
+        <div class="grid-item bottom-left">
+            <button id="generateRandomGraph">Đồ thị ngẫu nhiên</button>
+            <button id="addRandomEdges">Cạnh ngẫu nhiên</button>
+            <button id="clearGraph">Xóa đồ thị</button>
+        </div>
+
+        <div class="grid-item bottom-right">
+            <div class="tooltip">
+                <u>Hướng dẫn</u>
+                <div class="tooltip-text">
+                    Nhấn đúp: Tạo đỉnh<br>
+                    Nhấn chuột phải vào một đỉnh, kéo thả sang đỉnh khác: Tạo cạnh có hướng<br>
+                    Chọn đỉnh/cạnh > Nhấn Delete: Xóa<br>
+                    Kéo thả tại đỉnh: Xắp xếp vị trí đỉnh<br>
+                    Kéo thả tại khoảng không: Di chuyển đồ thị
+                </div>
+            </div>
         </div>
     </div>
+
 
     <div id="network"></div>
     <div id="editor" class="label-editor" contenteditable="true" style="display:none;"></div>
 
     <script>
         document.getElementById("generateRandomGraph").addEventListener("click", () => {
-            const numNodes = 5 + Math.floor(Math.random() * 6); // 5 to 10 nodes
-            const avgDegree = 4; // Average in+out degree
-            const totalEdges = Math.floor((numNodes * avgDegree) / 2); // Divide by 2 to avoid oversaturation
+            const numNodes = 5 + Math.floor(Math.random() * 6);
+            const avgDegree = 4;
+            const totalEdges = Math.floor((numNodes * avgDegree) / 2);
             const maxWeight = 20;
 
-            // Clear current graph
             nodes.clear();
             edges.clear();
             nodeId = 1;
 
-            // Add nodes
             const newNodes = [];
             for (let i = 0; i < numNodes; i++) {
-                const id = `Node${nodeId++}`;
+                const id = `Đỉnh ${nodeId++}`;
                 newNodes.push({
                     id,
                     label: id,
@@ -57,7 +71,6 @@
 
             const existingEdges = new Set();
 
-            // Randomly generate edges (avoiding duplicates and self-loops)
             while (edges.length < totalEdges) {
                 const fromIndex = Math.floor(Math.random() * numNodes);
                 let toIndex = Math.floor(Math.random() * numNodes);
@@ -84,19 +97,13 @@
 
             latestSortedNodes = [];
             const allNodes = nodes.get();
-            const allEdges = edges.get();
-
             const sortedNodes = allNodes.sort((a, b) => a.id.localeCompare(b.id));
-            latestSortedNodes = sortedNodes; // Save for reuse
-            const nodeIndex = Object.fromEntries(sortedNodes.map((n, i) => [n.id, i]));
-
-            updateNodeTable(sortedNodes);
+            latestSortedNodes = sortedNodes;
         });
     </script>
     <script>
         const container = document.getElementById("network");
         const editor = document.getElementById("editor");
-        const nodeTableBody = document.querySelector("#nodeTable tbody");
 
         const nodes = new vis.DataSet();
         const edges = new vis.DataSet();
@@ -114,7 +121,10 @@
                 selectable: true
             },
             manipulation: true,
-            physics: { stabilization: true },
+            physics: {
+                enabled: true,
+                stabilization: true
+            },
             nodes: {
                 shape: "ellipse",
                 font: { size: 14 }
@@ -128,7 +138,7 @@
         network.on("doubleClick", function (params) {
             if (params.nodes.length === 0 && params.edges.length === 0) {
                 const pos = network.DOMtoCanvas(params.pointer.DOM);
-                const id = `Node${nodeId++}`;
+                const id = `Đỉnh ${nodeId++}`;
                 nodes.add({ id, label: id, x: pos.x, y: pos.y, fixed: false });
             } else if (params.nodes.length > 0) {
                 const id = params.nodes[0];
@@ -215,24 +225,13 @@
             });
         }
 
-        function updateNodeTable(sortedNodes) {
-            nodeTableBody.innerHTML = "";
-            sortedNodes.forEach((node, index) => {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td>${node.label}</td><td>${index}</td>`;
-                nodeTableBody.appendChild(row);
-            });
-        }
-
         document.getElementById("generateMatrix").addEventListener("click", () => {
             const allNodes = nodes.get();
             const allEdges = edges.get();
 
             const sortedNodes = allNodes.sort((a, b) => a.id.localeCompare(b.id));
-            latestSortedNodes = sortedNodes; // Save for reuse
+            latestSortedNodes = sortedNodes;
             const nodeIndex = Object.fromEntries(sortedNodes.map((n, i) => [n.id, i]));
-
-            updateNodeTable(sortedNodes);
 
             const n = sortedNodes.length;
             const matrix = Array.from({ length: n }, (_, i) =>
@@ -251,6 +250,45 @@
             copyToClipboard(matrixString);
         });
 
+        document.getElementById("addRandomEdges").addEventListener("click", () => {
+            const allNodes = nodes.get();
+            const numNodes = allNodes.length;
+            const avgDegree = 4;
+            const totalEdges = Math.floor((numNodes * avgDegree) / 2);
+            const maxWeight = 20;
+
+            // Xóa toàn bộ các cạnh hiện có
+            edges.clear();
+
+            const existingEdges = new Set();
+
+            let added = 0;
+            while (added < totalEdges) {
+                const fromIndex = Math.floor(Math.random() * numNodes);
+                let toIndex = Math.floor(Math.random() * numNodes);
+
+                while (toIndex === fromIndex) {
+                    toIndex = Math.floor(Math.random() * numNodes);
+                }
+
+                const from = allNodes[fromIndex].id;
+                const to = allNodes[toIndex].id;
+                const edgeKey = `${from}->${to}`;
+
+                if (!existingEdges.has(edgeKey)) {
+                    const weight = Math.floor(Math.random() * maxWeight) + 1;
+                    edges.add({
+                        id: `${from}_${to}_${Date.now() + Math.random()}`,
+                        from,
+                        to,
+                        label: weight.toString()
+                    });
+                    existingEdges.add(edgeKey);
+                    added++;
+                }
+            }
+        });
+
         document.getElementById("copyNodeNames").addEventListener("click", () => {
             if (!latestSortedNodes.length) {
                 latestSortedNodes = nodes.get().sort((a, b) => a.id.localeCompare(b.id));
@@ -259,6 +297,21 @@
             const namesString = `{${namesArray.join(', ')}}`;
             copyToClipboard(namesString);
         });
+
+        document.getElementById("clearGraph").addEventListener("click", () => {
+            nodes.clear();
+            edges.clear();
+            nodeId = 1;
+            latestSortedNodes = [];
+        });
+
+        document.getElementById("togglePhysics").addEventListener("change", (event) => {
+            const physicsEnabled = event.target.checked;
+            network.setOptions({
+                physics: { enabled: physicsEnabled }
+            });
+        });
+
     </script>
 
 </body>
