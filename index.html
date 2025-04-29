@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Tạo ma trận chi phí</title>
+    <title>Hỗ trợ tạo đồ thị</title>
     <script src="script.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -22,23 +22,36 @@
             </label>
         </div>
 
-        <div class="grid-item bottom-left">
+        <div class=" grid-item bottom-left">
             <button id="generateRandomGraph">Đồ thị ngẫu nhiên</button>
             <button id="addRandomEdges">Cạnh ngẫu nhiên</button>
             <button id="clearGraph">Xóa đồ thị</button>
+            <div class="grid-item full-width" style="margin-top: 10px; grid-column: span 2;">
+                <input type="text" id="matrixInput" placeholder="Nhập ma trận chi phí"
+                    style="width: 95%; padding: 5px;">
+            </div>
+            <div class="grid-item full-width" style="margin-top: 10px; grid-column: span 2;">
+                <input type="text" id="vertexNamesInput" placeholder='Nhập tên các đỉnh, ví dụ: {"Q1", "Q2", ...}'
+                    style="width: 95%; padding: 5px;">
+            </div>
         </div>
 
         <div class="grid-item bottom-right">
             <div class="tooltip">
                 <u>Hướng dẫn</u>
                 <div class="tooltip-text">
-                    Nhấn đúp: Tạo đỉnh<br>
+                    Nhấn đúp: Tạo đỉnh, sửa tên cạnh, đỉnh<br>
                     Nhấn chuột phải vào một đỉnh, kéo thả sang đỉnh khác: Tạo cạnh có hướng<br>
                     Chọn đỉnh/cạnh > Nhấn Delete: Xóa<br>
                     Kéo thả tại đỉnh: Xắp xếp vị trí đỉnh<br>
-                    Kéo thả tại khoảng không: Di chuyển đồ thị
+                    Kéo thả tại khoảng không: Di chuyển đồ thị<br>
+                    Ctrl + Lăn chuột: Thu phóng
                 </div>
             </div>
+            <br>
+            <button id="createGraphFromMatrix" style="width: 100px; height: 70px; margin-top: 20px;">
+                Tạo đồ thị từ ma trận
+            </button>
         </div>
     </div>
 
@@ -200,9 +213,15 @@
             editor.style.left = position.x + "px";
             editor.style.top = position.y + "px";
             editor.textContent = initialText;
-            document.execCommand('selectAll', false, null);
             editor.style.display = "block";
             editor.focus();
+
+            // Select all text in the editor
+            const range = document.createRange();
+            range.selectNodeContents(editor);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
 
             editor.onblur = () => {
                 editor.style.display = "none";
@@ -216,6 +235,7 @@
                 }
             };
         }
+
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
@@ -312,6 +332,88 @@
             });
         });
 
+
+        document.getElementById("createGraphFromMatrix").addEventListener("click", () => {
+            const matrixInput = document.getElementById("matrixInput").value.trim();
+            const nameInput = document.getElementById("vertexNamesInput").value.trim();
+
+            if (!matrixInput) return;
+
+            try {
+                const matrix = matrixInput
+                    .replace(/^\[|\]$/g, '')
+                    .split(';')
+                    .map(row => row.trim().split(/\s+/).map(val =>
+                        val.toLowerCase() === 'inf' ? Infinity : parseFloat(val)
+                    ));
+
+
+                const size = matrix.length;
+
+                if (!matrix.every(row => row.length === size)) {
+                    alert("Ma trận không hợp lệ. Phải là ma trận vuông.");
+                    return;
+                }
+
+                let names = [];
+                if (nameInput) {
+                    try {
+                        // Convert `{"a", "b"}` format to JS array: ["a", "b"]
+                        names = nameInput
+                            .replace(/^\{|\}$/g, '')
+                            .split(',')
+                            .map(s => s.trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1'));
+
+                        if (names.length !== size) {
+                            alert(`Số lượng tên đỉnh (${names.length}) không khớp với kích thước ma trận (${size}).`);
+                            return;
+                        }
+                    } catch (e) {
+                        alert("Định dạng tên đỉnh không hợp lệ.");
+                        return;
+                    }
+                }
+
+                // Clear existing data
+                nodes.clear();
+                edges.clear();
+                nodeId = 1;
+                latestSortedNodes = [];
+
+                const newNodes = [];
+                for (let i = 0; i < size; i++) {
+                    const label = names.length ? names[i] : `Đỉnh ${nodeId++}`;
+                    newNodes.push({
+                        id: label,
+                        label,
+                        x: Math.random() * 500 - 250,
+                        y: Math.random() * 500 - 250
+                    });
+                }
+                nodes.add(newNodes);
+
+                const addedEdges = [];
+                for (let i = 0; i < size; i++) {
+                    for (let j = 0; j < size; j++) {
+                        const weight = matrix[i][j];
+                        if (i !== j && weight !== Infinity) {
+                            addedEdges.push({
+                                id: `${newNodes[i].id}_${newNodes[j].id}_${Date.now() + Math.random()}`,
+                                from: newNodes[i].id,
+                                to: newNodes[j].id,
+                                label: weight.toString()
+                            });
+                        }
+                    }
+                }
+
+                edges.add(addedEdges);
+                latestSortedNodes = newNodes.sort((a, b) => a.id.localeCompare(b.id));
+            } catch (err) {
+                alert("Lỗi khi phân tích ma trận. Vui lòng kiểm tra lại định dạng.");
+                console.error(err);
+            }
+        });
     </script>
 
 </body>

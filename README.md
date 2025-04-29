@@ -1,4 +1,20 @@
-# Chương 2: Ví dụ minh họa
+# Hướng dẫn
+
+Chạy chương trình trong **Command Window**: Gõ `>>> App_Floyd_Warshall`
+
+Link trang web hỗ trợ vẽ đồ thị: https://yymt242.github.io/Floyd-Warshall-Algorithm/
+
+# Chương 2: Dữ liệu đầu vào
+
+## Ví dụ chính
+
+```
+[0 inf 7 inf 8 inf; inf 0 inf inf 12 inf; inf inf 0 3 inf inf; inf inf 12 0 inf 15; inf 11 9 10 0 inf; inf 2 20 inf 11 0]
+{"A", "B", "C", "D", "E", "F"}
+Từ đỉnh A đến đỉnh F
+```
+
+##  Ví dụ minh họa
 
 ```
 Không có đường đi: C -> G
@@ -68,7 +84,7 @@ Inf 1238.0 Inf 717.2 Inf Inf Inf Inf Inf Inf Inf 0.0 Inf Inf Inf Inf Inf Inf Inf
 192.4 Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf 0.0 Inf Inf Inf;
 244.5 Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf 0.0 Inf Inf;
 231.8 1390.8 Inf Inf Inf Inf Inf Inf Inf Inf Inf 180.6 Inf Inf Inf Inf Inf Inf Inf Inf 0.0 Inf;
-1148.7 Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf 0.0;
+1148.7 Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf 0.0
 ]
 ```
 
@@ -101,7 +117,7 @@ Inf 7.3 Inf Inf Inf 6.6 Inf Inf Inf Inf Inf Inf Inf Inf Inf 6.5 0 Inf 8 Inf 5.2 
 Inf 16.1 Inf 13.7 Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf 8.1 3.8 6.2 11.2 0 Inf Inf Inf;
 Inf Inf Inf Inf 6.2 Inf Inf Inf Inf Inf Inf Inf 5.4 3.7 Inf 2.8 Inf Inf Inf 0 3.3 Inf;
 Inf Inf Inf Inf 6 3.9 Inf Inf Inf Inf Inf Inf Inf Inf Inf 3.2 3.6 Inf Inf 3.4 0 Inf;
-20.6 15.8 15.6 Inf 13.2 14.3 Inf 5.9 6.3 Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf 0;
+20.6 15.8 15.6 Inf 13.2 14.3 Inf 5.9 6.3 Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf Inf 0
 ]
 ```
 
